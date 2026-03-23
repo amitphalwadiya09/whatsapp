@@ -30,11 +30,11 @@ app.use(cors({
     credentials: true
 }))
 
-app.use(express.static(join(__dirname, "../Frontend/build")));
-
-app.get(/.*/, (req, res) => {
-    res.sendFile(join(__dirname, "../Frontend/dist/index.html"));
-});
+// Serve Vite build output.
+// Important: must point to `Frontend/dist`, otherwise `/assets/*.js` requests
+// will fall through to the SPA fallback and return HTML (MIME type error).
+const frontendDistPath = join(__dirname, "../Frontend/dist");
+app.use(express.static(frontendDistPath));
 //middleware
 app.use(express.json())
 app.use(cookieParser());
@@ -65,6 +65,18 @@ app.use('/api/auth', authRouter)
 app.use('/api/chat', chatRouter)
 app.use('/api/status', statusRouter)
 app.use("/api/conversations", conversationRouter);
+
+// SPA fallback: only for frontend routes (do not override API/uploads/assets).
+app.get("*", (req, res) => {
+    if (
+        req.path.startsWith("/api/") ||
+        req.path.startsWith("/uploads/") ||
+        req.path.startsWith("/assets/")
+    ) {
+        return res.status(404).end();
+    }
+    res.sendFile(join(frontendDistPath, "index.html"));
+});
 // app.use('*', (req, res) => {
 //     res.redirect('/welcome');
 // });
