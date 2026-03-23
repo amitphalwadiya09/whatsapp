@@ -33,7 +33,7 @@ app.use(cors({
 app.use(express.static(join(__dirname, "../Frontend/build")));
 
 app.get(/.*/, (req, res) => {
-    res.sendFile(join(__dirname, "../Frontend/build/index.html"));
+    res.sendFile(join(__dirname, "../Frontend/dist/index.html"));
 });
 //middleware
 app.use(express.json())
