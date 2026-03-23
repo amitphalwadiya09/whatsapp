@@ -10,6 +10,7 @@ import http from "http";
 import initializeSocket from "./Service/socketService.js";
 import statusRouter from "./Routes/statusRoute.js";
 import conversationRouter from "./Routes/conversationRoute.js";
+import path from "path";
 
 dotenv.config();
 
@@ -24,7 +25,11 @@ app.use(cors({
     credentials: true
 }))
 
+app.use(express.static(path.join(___dirname, "Frontend/build")))
 
+app.get("*", (req, res) => {
+    res.sendFile(path.join(___dirname, "Frontend/build/index.html"))
+})
 //middleware
 app.use(express.json())
 app.use(cookieParser());

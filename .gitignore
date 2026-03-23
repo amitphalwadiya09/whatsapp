@@ -1,2 +1,5 @@
 .env
 Backend/.env
+node_modules
+dist
+build
