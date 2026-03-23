@@ -2,7 +2,7 @@ import { io } from "socket.io-client";
 
 let socket = null;
 
-const ENDPOINT = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const ENDPOINT = import.meta.env.VITE_API_URL || "https://whatsapp-1-cfu7.onrender.com";
 
 export const initializeSocket = () => {
 

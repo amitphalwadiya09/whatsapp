@@ -84,7 +84,7 @@ const Adduser = ({ onClose }) => {
 
         try {
             const res = await fetch(
-                "http://localhost:3000/api/conversations/remove-user",
+                "https://whatsapp-1-cfu7.onrender.com/api/conversations/remove-user",
                 {
                     method: "PUT",
                     headers: {
@@ -122,7 +122,7 @@ const Adduser = ({ onClose }) => {
 
         try {
             const res = await fetch(
-                "http://localhost:3000/api/conversations/add-user",
+                "https://whatsapp-1-cfu7.onrender.com/api/conversations/add-user",
                 {
                     method: "PUT",
                     headers: {

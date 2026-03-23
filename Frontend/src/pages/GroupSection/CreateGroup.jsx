@@ -40,7 +40,7 @@ const CreateGroup = ({ onClose }) => {
 
         try {
             const res = await fetch(
-                `http://localhost:3000/api/users/search/${value}`,
+                `https://whatsapp-1-cfu7.onrender.com/api/users/search/${value}`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -107,7 +107,7 @@ const CreateGroup = ({ onClose }) => {
         }
 
         const token = localStorage.getItem("token");
-        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
+        const apiUrl = import.meta.env.VITE_API_URL || "https://whatsapp-1-cfu7.onrender.com";
 
         try {
             const res = await fetch(
