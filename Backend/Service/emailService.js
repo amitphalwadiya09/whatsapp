@@ -21,7 +21,8 @@ transporter.verify((error, success) => {
 })
 
 const sendOtpToEmail = async (email, otp) => {
-    const html = `
+    try {
+        const html = `
     <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
       <h2 style="color: #075e54;">🔐 WhatsApp Web Verification</h2>
       
@@ -44,13 +45,19 @@ const sendOtpToEmail = async (email, otp) => {
       <small style="color: #777;">This is an automated message. Please do not reply.</small>
     </div>
   `;
-    await transporter.sendMail({
-        from: `whatsapp web < ${process.env.EMAIL_USER}`,
-        to: email,
-        subject: "your whatsapp verification code",
-        html,
-    })
-
+        const mailOptions = {
+            from: `whatsapp web < ${process.env.EMAIL_USER}`,
+            to: email,
+            subject: "your whatsapp verification code",
+            html,
+        };
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Email sent successfully:', info.messageId);
+        return { success: true, messageId: info.messageId };
+    } catch (error) {
+        console.error('Error sending email:', error);
+        throw new Error('Failed to send OTP email');
+    }
 }
 
 export default sendOtpToEmail;
