@@ -39,7 +39,7 @@ app.use("/uploads", express.static("uploads"));
 // Health check / root endpoint
 // Your Render service currently returns 404 for `GET /` because only `/api/*` routes are mounted.
 app.get("/", (req, res) => {
-    res.status(200).json({ status: "ok", message: "WhatsApp Clone backend is running" });
+    res.status(200).json({ status: "ok", message: "WhatsApp Clone backend is running (root ok)" });
 });
 
 //create server
