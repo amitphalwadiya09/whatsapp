@@ -8,6 +8,54 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // #region agent log
+      (function () {
+        var endpoint = "http://127.0.0.1:7892/ingest/c2201fb1-f3f9-43e9-ab39-777f75ceb9ab";
+        var sessionId = "2f62ed";
+
+        function send(hypothesisId, data) {
+          try {
+            fetch(endpoint, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-Debug-Session-Id": sessionId,
+              },
+              body: JSON.stringify({
+                sessionId: sessionId,
+                location: "Frontend/index.html:inline-logger",
+                message: "Captured runtime error (module/MIME likely)",
+                data: data,
+                timestamp: Date.now(),
+                hypothesisId: hypothesisId,
+              }),
+            }).catch(function () {});
+          } catch (e) {}
+        }
+
+        window.addEventListener(
+          "error",
+          function (event) {
+            try {
+              var targetSrc =
+                event && event.target && event.target.src ? event.target.src : null;
+              var message = event && event.message ? event.message : null;
+              send("H1", {
+                href: window.location.href,
+                message: message,
+                targetSrc: targetSrc,
+                filename: event && event.filename ? event.filename : null,
+                lineno: event && event.lineno ? event.lineno : null,
+                colno: event && event.colno ? event.colno : null,
+              });
+            } catch (e) {}
+          },
+          true
+        );
+      })();
+      // #endregion
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
