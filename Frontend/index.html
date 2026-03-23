@@ -34,6 +34,29 @@
           } catch (e) {}
         }
 
+        // #region agent log - probe expected module URL
+        try {
+          var moduleUrl = new URL("/src/main.jsx", window.location.href).toString();
+          // HEAD is low-cost; if unsupported it will error and we still get evidence.
+          fetch(moduleUrl, { method: "HEAD", credentials: "same-origin" })
+            .then(function (res) {
+              send("H3", {
+                probeType: "HEAD",
+                moduleUrl: moduleUrl,
+                status: res.status,
+                contentType: res.headers.get("content-type"),
+              });
+            })
+            .catch(function (err) {
+              send("H3", {
+                probeType: "HEAD",
+                moduleUrl: moduleUrl,
+                error: String(err && err.message ? err.message : err),
+              });
+            });
+        } catch (e) {}
+        // #endregion
+
         window.addEventListener(
           "error",
           function (event) {
