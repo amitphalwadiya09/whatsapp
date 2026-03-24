@@ -1,5 +1,5 @@
 import express from "express";
-import { checkAuthenicated, deleteUser, getAllUsers, logout, searchUser, sendOTP, updateNumber, updateProfile, verifyOtp } from "../Controller/authController.js";
+import { checkAuthenicated, deleteUser, getAllUsers, logout, searchUser, loginWithMpin, registerUser, updateNumber, updateProfile } from "../Controller/authController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import { multerMiddleware } from "../Config/cloudinaryconfig.js";
 import protect from "../middleware/Protect.js";
@@ -7,8 +7,8 @@ import protect from "../middleware/Protect.js";
 const authRouter = express.Router();
 
 
-authRouter.post('/send-otp', sendOTP);
-authRouter.post('/verify-otp', verifyOtp);
+authRouter.post('/login', loginWithMpin);
+authRouter.post('/register', registerUser);
 authRouter.get('/logout', logout)
 
 authRouter.put('/update-profile', protect, multerMiddleware, updateProfile);

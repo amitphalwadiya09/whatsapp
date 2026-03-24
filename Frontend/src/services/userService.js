@@ -1,20 +1,17 @@
 import axiosInstance from "./url.service"
 
-export const sendOtp = async (phoneNumber, phoneSuffix, email) => {
+export const loginUserApi = async (phoneNumber, email, mpin) => {
     try {
-        const response = await axiosInstance.post('/api/auth/send-otp', { phoneNumber, phoneSuffix, email })
+        const response = await axiosInstance.post('/api/auth/login', { phoneNumber, email, mpin })
         return response.data;
     } catch (error) {
         throw error.response ? error.response.data : error.message;
     }
 }
 
-
-export const verifyOtp = async (phoneNumber, phoneSuffix, email, otp) => {
+export const registerUserApi = async (phoneNumber, phoneSuffix, email, mpin) => {
     try {
-        const response = await axiosInstance.post('/api/auth/verify-otp', { phoneNumber, phoneSuffix, email, otp })
-        console.log(response)
-        console.log(response.data)
+        const response = await axiosInstance.post('/api/auth/register', { phoneNumber, phoneSuffix, email, mpin })
         return response.data;
     } catch (error) {
         throw error.response ? error.response.data : error.message;

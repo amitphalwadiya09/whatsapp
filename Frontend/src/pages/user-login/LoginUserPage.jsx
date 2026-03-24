@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react'
 import countries from '../../utils/countriles';
 import { Divider } from "@mui/material";
@@ -9,24 +8,25 @@ import Spinner from "../../utils/Spinner";
 import { Box, Paper, Typography, TextField, Button, Select, MenuItem, InputAdornment } from "@mui/material";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import { useNavigate } from "react-router-dom";
-import { sendOtp, verifyOtp } from '../../services/userService';
+import { loginUserApi, registerUserApi } from '../../services/userService';
 import OtpInputPage from './OtpInputPage';
 
 const LoginUserPage = () => {
-    const [showOtp, setShowOtp] = useState(false);
+    const [showMpin, setShowMpin] = useState(false);
     const [showEmail, setShowEmail] = useState(true);
-    const [showPhoneNumber, setShowPhoneNumber] = useState(true)
+    const [showPhoneNumber, setShowPhoneNumber] = useState(true);
+    const [isLoginMode, setIsLoginMode] = useState(true);
     const navigate = useNavigate();
     const [loginInfo, setLoginInfo] = useState({
         countryCode: countries[0].dialCode,
         phoneNumber: "",
         email: "",
-        otp: "",
+        mpin: "",
     })
     const [error, setError] = useState({
         email: "",
         phoneNumber: "",
-        otp: ""
+        mpin: ""
     })
     const [userData, setUserData] = useState("");
 
@@ -58,7 +58,7 @@ const LoginUserPage = () => {
         if (name === "phoneNumber") {
             setError((prev) => {
                 return {
-                    ...prev, phoneNumber: phoneRegex.test(value.trim()) ? "" : "Invaild phone number"
+                    ...prev, phoneNumber: phoneRegex.test(value.trim()) ? "" : "Invalid phone number"
                 }
             })
         }
@@ -76,71 +76,45 @@ const LoginUserPage = () => {
             return;
         }
 
-        try {
-
-            if (loginInfo.email && loginInfo.phoneNumber) {
-                toast.error("enter only on field")
-                return;
-            }
-
-            toast.info("OTP is send to your phone number")
-            setShowEmail(false);
-            setShowPhoneNumber(false);
-            setShowOtp(true)
-            setUserData(`${loginInfo.countryCode}${loginInfo.phoneNumber}`);
-            // if (loginInfo.email) {
-            //     const response = await sendOtp(null, null, loginInfo.email)
-            //     if (response.status === "success") {
-            //         toast.info("OTP is send to your email")
-            //         setShowPhoneNumber(false);
-            //         setShowEmail(false);
-            //         setShowOtp(true)
-            //         setUserData(loginInfo.email);
-            //     }
-
-            // }
-            // else {
-            //     const response = await sendOtp(loginInfo.phoneNumber, loginInfo.countryCode, null)
-            //     if (response.status === "success") {
-            //         toast.info("OTP is send to your phone number")
-            //         setShowEmail(false);
-            //         setShowPhoneNumber(false);
-            //         setShowOtp(true)
-            //         setUserData(`${loginInfo.countryCode}${loginInfo.phoneNumber}`);
-            //     }
-
-            // }
-
+        if (loginInfo.email && loginInfo.phoneNumber) {
+            toast.error("Enter only one field");
+            return;
         }
-        catch (error) {
-            console.error(error)
-            toast.error("Something went wrong");
 
-        }
+        setShowEmail(false);
+        setShowPhoneNumber(false);
+        setShowMpin(true)
+        setUserData(loginInfo.email ? loginInfo.email : `${loginInfo.countryCode}${loginInfo.phoneNumber}`);
     }
 
-    const onOtpSubmit = async (e) => {
+    const onMpinSubmit = async (e) => {
         e.preventDefault();
+        
+        if (loginInfo.mpin.length < 6) {
+            toast.error("Enter a 6-digit MPIN");
+            return;
+        }
+
         dispatch(loginStart());
 
         try {
-
-            if (!loginInfo.email && !loginInfo.phoneNumber) {
-                toast.error("Enter email or phone number");
-                return;
-            }
             let response;
 
-            if (loginInfo.email) {
-                response = await verifyOtp(null, null, loginInfo.email, loginInfo.otp);
+            if (isLoginMode) {
+                response = await loginUserApi(
+                    loginInfo.phoneNumber ? `${loginInfo.countryCode}${loginInfo.phoneNumber}` : null, 
+                    loginInfo.email || null, 
+                    loginInfo.mpin
+                );
             } else {
-                response = await verifyOtp(
-                    loginInfo.phoneNumber,
-                    loginInfo.countryCode,
-                    null,
-                    loginInfo.otp
+                response = await registerUserApi(
+                    loginInfo.phoneNumber || null,
+                    loginInfo.countryCode || null,
+                    loginInfo.email || null,
+                    loginInfo.mpin
                 );
             }
+            
             if (response.status === "success") {
 
                 const { token, user } = response.data;
@@ -149,8 +123,8 @@ const LoginUserPage = () => {
 
                 localStorage.setItem("token", token);
                 localStorage.setItem("user", JSON.stringify(user));
-                // console.log(user.username)
-                toast.success("OTP verified");
+                
+                toast.success(isLoginMode ? "Login successful" : "Account created successfully");
 
                 if (user?.username && user.username.trim() !== "") {
                     navigate("/home");
@@ -158,12 +132,9 @@ const LoginUserPage = () => {
                     navigate("/register");
                 }
             }
-            console.log(4)
         } catch (error) {
-
-            dispatch(loginFailure(error.message));
-            toast.error("OTP verification failed");
-
+            dispatch(loginFailure(error.message || error));
+            toast.error(error.message || (isLoginMode ? "Login failed. Check your MPIN." : "Registration failed."));
         }
     };
 
@@ -233,9 +204,10 @@ const LoginUserPage = () => {
                                 fontSize: 14
                             }}
                         >
-                            Log in
+                            {isLoginMode ? "Log in" : "Register"}
                         </Typography>
                     </Box>
+                    
                     {/* Phone */}
                     {showPhoneNumber ? (<><TextField
                         fullWidth
@@ -285,7 +257,8 @@ const LoginUserPage = () => {
                             </Typography>
                         </Divider>
                     )}
-                    {showOtp && (
+                    
+                    {showMpin && (
                         <Box
                             sx={{
                                 mt: 2,
@@ -301,7 +274,7 @@ const LoginUserPage = () => {
                                     lineHeight: 1.5
                                 }}
                             >
-                                Enter the 6-digit code sent to
+                                {isLoginMode ? "Enter your 6-digit MPIN for" : "Create a 6-digit MPIN for"}
                             </Typography>
 
                             <Typography
@@ -325,26 +298,22 @@ const LoginUserPage = () => {
                             helperText={error.email}
 
                             sx={{ my: 1 }} />
-                    ) : ""}
-                    {/* show the text after otp send */}
-
-
-
-
+                        ) : ""}
+                    
                     {/* Password (appears after Next) */}
-                    {showOtp && (
+                    {showMpin && (
                         <OtpInputPage
                             length={6}
                             onChangeOtp={(value) =>
                                 setLoginInfo((prev) => ({
                                     ...prev,
-                                    otp: value
+                                    mpin: value
                                 }))
                             }
                         />
                     )}
 
-                    {!showOtp ? (
+                    {!showMpin ? (
                         <Button
                             fullWidth
                             variant="contained"
@@ -353,6 +322,7 @@ const LoginUserPage = () => {
                                 color: "#000",
                                 fontWeight: 600,
                                 "&:hover": { bgcolor: "#1EBE5D" },
+                                mt: 2
                             }}
                             onClick={handleNextClick}
                         >
@@ -367,15 +337,35 @@ const LoginUserPage = () => {
                                 color: "#000",
                                 fontWeight: 600,
                                 "&:hover": { bgcolor: "#1EBE5D" },
+                                mt: 2
                             }}
                             type='submit'
-                            onClick={onOtpSubmit}
+                            onClick={onMpinSubmit}
                         >
-                            {loading ? <Spinner size="small" /> : "Log in"}
+                            {loading ? <Spinner size="small" /> : (isLoginMode ? "Log in" : "Register")}
                         </Button>
                     </>
                     )}
 
+                    {!showMpin && (
+                        <Box sx={{ mt: 3, textAlign: "center" }}>
+                            <Typography sx={{ fontSize: 14, color: "#667781" }}>
+                                {isLoginMode ? "Don't have an account?" : "Already have an account?"}
+                                <Button
+                                    variant="text"
+                                    onClick={() => setIsLoginMode(!isLoginMode)}
+                                    sx={{
+                                        color: "#25D366",
+                                        textTransform: "none",
+                                        fontWeight: 600,
+                                        ml: 1
+                                    }}
+                                >
+                                    {isLoginMode ? "Register here" : "Log in here"}
+                                </Button>
+                            </Typography>
+                        </Box>
+                    )}
 
                 </Paper>
             </Box>

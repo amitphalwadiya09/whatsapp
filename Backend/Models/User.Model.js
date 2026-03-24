@@ -17,6 +17,10 @@ const userSchema = new mongoose.Schema({
             message: "Invalid email format"
         }
     },
+    mpin: {
+        type: String,
+        required: true
+    },
     password: { type: String, minLength: 6 },
     emailOtp: { type: String },
     emailOtpExpiry: { type: Date },
