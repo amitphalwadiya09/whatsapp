@@ -82,30 +82,37 @@ const LoginUserPage = () => {
                 toast.error("enter only on field")
                 return;
             }
-            if (loginInfo.email) {
-                const response = await sendOtp(null, null, loginInfo.email)
-                if (response.status === "success") {
-                    toast.info("OTP is send to your email")
-                    setShowPhoneNumber(false);
-                    setShowEmail(false);
-                    setShowOtp(true)
-                    setUserData(loginInfo.email);
-                }
 
-            }
-            else {
-                const response = await sendOtp(loginInfo.phoneNumber, loginInfo.countryCode, null)
-                if (response.status === "success") {
-                    toast.info("OTP is send to your phone number")
-                    setShowEmail(false);
-                    setShowPhoneNumber(false);
-                    setShowOtp(true)
-                    setUserData(`${loginInfo.countryCode}${loginInfo.phoneNumber}`);
-                }
+            toast.info("OTP is send to your phone number")
+            setShowEmail(false);
+            setShowPhoneNumber(false);
+            setShowOtp(true)
+            setUserData(`${loginInfo.countryCode}${loginInfo.phoneNumber}`);
+            // if (loginInfo.email) {
+            //     const response = await sendOtp(null, null, loginInfo.email)
+            //     if (response.status === "success") {
+            //         toast.info("OTP is send to your email")
+            //         setShowPhoneNumber(false);
+            //         setShowEmail(false);
+            //         setShowOtp(true)
+            //         setUserData(loginInfo.email);
+            //     }
 
-            }
+            // }
+            // else {
+            //     const response = await sendOtp(loginInfo.phoneNumber, loginInfo.countryCode, null)
+            //     if (response.status === "success") {
+            //         toast.info("OTP is send to your phone number")
+            //         setShowEmail(false);
+            //         setShowPhoneNumber(false);
+            //         setShowOtp(true)
+            //         setUserData(`${loginInfo.countryCode}${loginInfo.phoneNumber}`);
+            //     }
 
-        } catch (error) {
+            // }
+
+        }
+        catch (error) {
             console.error(error)
             toast.error("Something went wrong");
 

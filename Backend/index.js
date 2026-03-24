@@ -30,9 +30,6 @@ app.use(cors({
     credentials: true
 }))
 
-// Serve Vite build output.
-// Important: must point to `Frontend/dist`, otherwise `/assets/*.js` requests
-// will fall through to the SPA fallback and return HTML (MIME type error).
 const frontendDistPath = join(__dirname, "../Frontend/dist");
 app.use(express.static(frontendDistPath));
 //middleware
