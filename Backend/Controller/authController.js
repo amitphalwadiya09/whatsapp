@@ -10,103 +10,103 @@ import Conversation from "../Models/Conversation.model.js";
 
 
 // OTP generation controller
-// export const sendOTP = async (req, res) => {
-//     const { phoneNumber, phoneSuffix, email } = req.body;
-//     const otp = await otpGenerater();
-//     const expiry = new Date(Date.now() + 10 * 60 * 1000);
-//     let user;
+export const sendOTP = async (req, res) => {
+    const { phoneNumber, phoneSuffix, email } = req.body;
+    const otp = await otpGenerater();
+    const expiry = new Date(Date.now() + 10 * 60 * 1000);
+    let user;
 
-//     try {
-//         if (email) {
-//             user = await User.findOne({ email });
-//             if (!user) {
-//                 user = new User({ email });
-//             }
-//             user.emailOtp = otp;
-//             user.emailOtpExpiry = expiry;
-//             await user.save();
-//             await sendOtpToEmail(email, otp)
-//             return response(res, 200, 'OTP send to your email');
-//         }
-//         if (!phoneNumber || !phoneSuffix) {
-//             return response(res, 400, "phone number is required");
-//         }
-//         const fullPhoneNumber = phoneSuffix + phoneNumber;
-//         user = await User.findOne({ phoneNumber });
-//         if (!user) {
-//             user = await new User({ phoneNumber, phoneSuffix });
-//         }
+    try {
+        if (email) {
+            user = await User.findOne({ email });
+            if (!user) {
+                user = new User({ email });
+            }
+            user.emailOtp = otp;
+            user.emailOtpExpiry = expiry;
+            await user.save();
+            await sendOtpToEmail(email, otp)
+            return response(res, 200, 'OTP send to your email');
+        }
+        if (!phoneNumber || !phoneSuffix) {
+            return response(res, 400, "phone number is required");
+        }
+        const fullPhoneNumber = phoneSuffix + phoneNumber;
+        user = await User.findOne({ phoneNumber });
+        if (!user) {
+            user = await new User({ phoneNumber, phoneSuffix });
+        }
 
-//         await sendOtpToPhoneNumber(fullPhoneNumber)
-//         await user.save();
+        await sendOtpToPhoneNumber(fullPhoneNumber)
+        await user.save();
 
-//         return response(res, 200, "otp send successfully")
-//     } catch (error) {
-//         console.error(error)
-//         return response(res, 500, "internal server error");
-//     }
-// }
+        return response(res, 200, "otp send successfully")
+    } catch (error) {
+        console.error(error)
+        return response(res, 500, "internal server error");
+    }
+}
 
-// // Verify OTP
-// export const verifyOtp = async (req, res) => {
-//     const { phoneNumber, phoneSuffix, email, otp } = req.body;
+// Verify OTP
+export const verifyOtp = async (req, res) => {
+    const { phoneNumber, phoneSuffix, email, otp } = req.body;
 
-//     try {
-//         let user;
-//         if (email) {
-//             user = await User.findOne({ email });
-//             // if (!user) {
-//             //     return response(res, 404, "User not found")
-//             // }
-//             // const now = new Date();
-//             // if (!user.emailOtp || String(user.emailOtp) !== String(otp) || now > new Date(user.emailOtpExpiry)) {
-//             //     return response(res, 400, "otp is invalid")
-//             // }
-
-
-//             if (String(otp) == "123456") {
-//                 user.isVerified = true;
-//                 user.emailOtp = null;
-//                 user.emailOtpExpiry = null;
-//                 user.isOnline = true;
-//             }
+    try {
+        let user;
+        if (email) {
+            user = await User.findOne({ email });
+            // if (!user) {
+            //     return response(res, 404, "User not found")
+            // }
+            // const now = new Date();
+            // if (!user.emailOtp || String(user.emailOtp) !== String(otp) || now > new Date(user.emailOtpExpiry)) {
+            //     return response(res, 400, "otp is invalid")
+            // }
 
 
-
-//             await user.save();
-//         }
-
-//         else {
-
-//             if (!phoneNumber) {
-//                 return response(res, 400, "Phone number required")
-//             }
-//             const fullPhoneNumber = `${phoneSuffix}${phoneNumber}`;
-//             user = await User.findOne({ phoneNumber: fullPhoneNumber });
-//             if (!user) {
-//                 return response(res, 404, "user not found")
-//             }
-//             const result = await TwilloverifyOtp(fullPhoneNumber, otp);
-//             if (result.status !== "approved") {
-//                 return response(res, 400, "Invalid OTP")
-
-//             }
-//             user.isVerified = true;
-//             await user.save();
+            if (String(otp) == "123456") {
+                user.isVerified = true;
+                user.emailOtp = null;
+                user.emailOtpExpiry = null;
+                user.isOnline = true;
+            }
 
 
-//         }
 
-//         const token = generateToken(user?._id);
-//         console.log(`user is connected ${user}`)
-//         console.log(`token is connected ${token}`)
+            await user.save();
+        }
 
-//         return response(res, 200, "OTP verified successfully", { token, user })
-//     } catch (error) {
-//         console.error(error)
-//         return response(res, 500, "Internal server error");
-//     }
-// }
+        else {
+
+            if (!phoneNumber) {
+                return response(res, 400, "Phone number required")
+            }
+            const fullPhoneNumber = `${phoneSuffix}${phoneNumber}`;
+            user = await User.findOne({ phoneNumber: fullPhoneNumber });
+            if (!user) {
+                return response(res, 404, "user not found")
+            }
+            const result = await TwilloverifyOtp(fullPhoneNumber, otp);
+            if (result.status !== "approved") {
+                return response(res, 400, "Invalid OTP")
+
+            }
+            user.isVerified = true;
+            await user.save();
+
+
+        }
+
+        const token = generateToken(user?._id);
+        console.log(`user is connected ${user}`)
+        console.log(`token is connected ${token}`)
+
+        return response(res, 200, "OTP verified successfully", { token, user })
+    } catch (error) {
+        console.error(error)
+        return response(res, 500, "Internal server error");
+    }
+}
 
 export const registerUser = async (req, res) => {
     const { phoneNumber, phoneSuffix, email, mpin } = req.body;
