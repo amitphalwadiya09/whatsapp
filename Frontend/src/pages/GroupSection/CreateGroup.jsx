@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { setChats, selectChat } from "../../Slices/chatSlice"
+import { apiUrl } from "../../services/url.service";
 import {
     TextField,
     Box,
@@ -40,7 +41,7 @@ const CreateGroup = ({ onClose }) => {
 
         try {
             const res = await fetch(
-                `http://localhost:3000/api/users/search/${value}`,
+                `${apiUrl}/api/users/search/${value}`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -55,10 +56,6 @@ const CreateGroup = ({ onClose }) => {
                 (user) => !selectedUsers.some((u) => u._id === user._id)
             );
 
-            // Sort by name
-            // filtered.sort((a, b) =>
-            //     a.name.localeCompare(b.name)
-            // );
             filtered.sort((a, b) =>
                 a.username.localeCompare(b.username)
             );

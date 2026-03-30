@@ -1,5 +1,6 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { apiUrl } from "../../services/url.service";
 import {
     Box,
     Typography,
@@ -8,6 +9,7 @@ import {
     List,
     TextField,
     ListItemAvatar,
+
     ListItemText,
     IconButton,
     CircularProgress,
@@ -78,7 +80,7 @@ const ChatDetailsPanel = ({ onClose }) => {
 
         try {
             const res = await fetch(
-                "http://localhost:3000/api/conversations/remove-user",
+                `${apiUrl}/api/conversations/remove-user`,
                 {
                     method: "PUT",
                     headers: {
@@ -122,7 +124,7 @@ const ChatDetailsPanel = ({ onClose }) => {
         }
         try {
             const res = await fetch(
-                `http://localhost:3000/api/conversations/update-group`,
+                `${apiUrl}/api/conversations/update-group`,
                 {
                     method: "PUT",
                     headers: {

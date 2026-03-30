@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { setChats, selectChat } from "../../Slices/chatSlice"
+import { apiUrl } from "../../services/url.service";
 import {
     TextField,
     Box,
@@ -83,7 +84,7 @@ const Adduser = ({ onClose }) => {
 
         try {
             const res = await fetch(
-                "http://localhost:3000/api/conversations/remove-user",
+                `${apiUrl}/api/conversations/remove-user`,
                 {
                     method: "PUT",
                     headers: {
@@ -121,7 +122,7 @@ const Adduser = ({ onClose }) => {
 
         try {
             const res = await fetch(
-                "http://localhost:3000/api/conversations/add-user",
+                `${apiUrl}/api/conversations/add-user`,
                 {
                     method: "PUT",
                     headers: {

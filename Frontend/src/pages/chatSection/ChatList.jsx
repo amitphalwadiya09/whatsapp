@@ -116,19 +116,19 @@ const ChatList = () => {
     const getMessageStatusIcon = (chat) => {
         const msg = chat?.lastMessage;
 
+        // ❌ Hide for system messages
+        if (!msg || msg.contentType === "system") return null;
+
         // show only if current user is sender
-        if (!msg || msg.sender?._id !== currentUser._id) return null;
+        if (msg.sender?._id !== currentUser._id) return null;
 
         switch (msg.messageStatus) {
             case "sent":
                 return <span style={{ fontSize: 12, color: "#667781" }}>✓</span>;
-
             case "delivered":
                 return <span style={{ fontSize: 12, color: "#667781" }}>✓✓</span>;
-
             case "read":
                 return <span style={{ fontSize: 12, color: "#06cf9c" }}>✓✓</span>;
-
             default:
                 return null;
         }
@@ -136,8 +136,11 @@ const ChatList = () => {
 
     const getLastMessageText = (chat, otherUser) => {
         const msg = chat?.lastMessage;
-        if (!msg || msg.contentType === "system") {
-            return otherUser?.about || "No messages yet";
+        if (!msg) return otherUser?.about || "No messages yet";
+
+        // ✅ Always show system message content
+        if (msg.contentType === "system") {
+            return msg.content;
         }
 
         return msg.content || otherUser?.about || "No messages yet";
@@ -238,7 +241,7 @@ const ChatList = () => {
                                         </Typography>
 
                                         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                                            {getMessageStatusIcon(chat)}
+                                            {!chat.contentType == "system" ? getMessageStatusIcon(chat) : null}
                                             <Typography
                                                 sx={{
                                                     fontSize: "14px",
