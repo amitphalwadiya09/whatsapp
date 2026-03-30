@@ -15,12 +15,13 @@ dotenv.config();
 
 const PORT = process.env.PORT || 3000;
 const app = express();
+const frontendURL = process.env.FORNTEND_URL || "http://localhost:5173";
 
 
 
 
 app.use(cors({
-    origin: "https://whatsapp-1-r7tz.onrender.com",
+    origin: frontendURL,
     credentials: true
 }))
 
