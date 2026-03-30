@@ -1,5 +1,4 @@
 import { Box, Typography } from "@mui/material";
-import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import React, { useState } from "react";
 import CreateGroup from "../GroupSection/CreateGroup";
