@@ -86,7 +86,7 @@ const SettingItem = () => {
                 toast.success("Account deleted successfully");
                 setTimeout(() => {
                     localStorage.clear();
-                    window.location.href = "/welcome"; // redirect
+                    window.location.href = "/";
                 }, 1000);
             } else {
                 toast.error(res.message || "Failed to delete account");
