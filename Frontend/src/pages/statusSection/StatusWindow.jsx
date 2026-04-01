@@ -11,7 +11,7 @@ const StatusWindow = ({ status, onBack, onStatusUpdate }) => {
     const currentUser = JSON.parse(localStorage.getItem("user"));
     const [progress, setProgress] = useState(0);
     const videoRef = useRef(null);
-    const duration = 500000;
+    const duration = 5000;
     const [showViewersList, setShowViewersList] = useState(false);
     const [statusData, setStatusData] = useState(status);
     const [isMouseDown, setIsMouseDown] = useState(false);
