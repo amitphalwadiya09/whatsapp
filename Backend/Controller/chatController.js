@@ -8,7 +8,7 @@ import response from "../Utils/responseHandler.js";
 // SEND MESSAGE (Optimized)
 export const sendMessage = async (req, res) => {
     try {
-        const { senderId, receiverId, content } = req.body;
+        const { senderId, receiverId, content, contentType } = req.body;
         const file = req.file;
 
         if (!senderId || !receiverId) {
@@ -31,7 +31,7 @@ export const sendMessage = async (req, res) => {
         }
 
         let imageOrVideoUrl = null;
-        let contentType = null;
+        let finalContentType = null;
 
         if (file) {
             const uploadFile = await uploadFileToCloudinary(file);
@@ -41,10 +41,10 @@ export const sendMessage = async (req, res) => {
             }
 
             imageOrVideoUrl = uploadFile.secure_url;
-            contentType = file.mimetype.startsWith("image") ? "image" :
+            finalContentType = file.mimetype.startsWith("image") ? "image" :
                 file.mimetype.startsWith("video") ? "video" : "file";
         } else if (content?.trim()) {
-            contentType = "text";
+            finalContentType = contentType || "text";
         } else {
             return response(res, 400, "message content required");
         }
@@ -59,7 +59,7 @@ export const sendMessage = async (req, res) => {
             sender: senderId,
             receiver: receiverId,
             content,
-            contentType,
+            contentType: finalContentType,
             imageOrVideoUrl,
             messageStatus: initialMessageStatus
         });
@@ -113,7 +113,6 @@ export const sendMessage = async (req, res) => {
         return response(res, 500, "cannot send message");
     }
 };
-
 
 // GET MESSAGES (Optimized with pagination)
 export const getMessages = async (req, res) => {
@@ -186,7 +185,6 @@ export const getMessages = async (req, res) => {
         return response(res, 500, "cannot get messages");
     }
 };
-
 
 // DELETE MESSAGE
 export const deleteMessage = async (req, res) => {
@@ -305,7 +303,6 @@ export const getConversation = async (req, res) => {
     }
 };
 
-
 export const groupMessageSeen = async (req, res) => {
     const { messageId } = req.body;
     const userId = req.user._id;
@@ -346,7 +343,6 @@ export const groupMessageSeen = async (req, res) => {
 
     }
 };
-
 
 // MARK AS READ
 export const markAsRead = async (req, res) => {

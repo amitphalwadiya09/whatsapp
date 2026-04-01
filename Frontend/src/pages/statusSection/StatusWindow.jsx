@@ -1,17 +1,27 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Box, Typography, IconButton, Avatar, LinearProgress } from "@mui/material";
+import { Box, Typography, IconButton, Avatar, LinearProgress, TextField } from "@mui/material";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { getConsistentColor } from "../../utils/RandomColor";
+import { deleteStatus } from "../../services/status.service";
+import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
+import StatusReaction from "./StatusReaction";
 
-const StatusWindow = ({ status, onBack }) => {
+const StatusWindow = ({ status, onBack, onStatusUpdate }) => {
     const currentUser = JSON.parse(localStorage.getItem("user"));
     const [progress, setProgress] = useState(0);
     const videoRef = useRef(null);
-    const duration = 5000;
-
+    const duration = 500000;
+    const [showViewersList, setShowViewersList] = useState(false);
+    const [statusData, setStatusData] = useState(status);
+    const [isMouseDown, setIsMouseDown] = useState(false);
+    const [isTyping, setIsTyping] = useState(false);
+    const emojiRef = useRef(null);
+    const intervalRef = useRef(null);
+    // console.log("Rendering StatusWindow with status:", status);
     useEffect(() => {
         setProgress(0);
+        setStatusData(status);
         if (!status) return;
 
         if (status.user._id !== currentUser._id) {
@@ -22,14 +32,16 @@ const StatusWindow = ({ status, onBack }) => {
             }).catch(e => console.error(e));
         }
 
-        let interval;
-        if (status.contentType !== "video") {
+        // Pause timer if viewing list, typing, or mouse is held down
+        const shouldPause = showViewersList || isTyping || isMouseDown;
+
+        if (status.contentType !== "video" && !shouldPause) {
             const intervalTime = 50;
-            interval = setInterval(() => {
+            intervalRef.current = setInterval(() => {
                 setProgress(prev => {
                     const next = prev + (intervalTime / duration) * 100;
                     if (next >= 100) {
-                        clearInterval(interval);
+                        clearInterval(intervalRef.current);
                         onBack();
                         return 100;
                     }
@@ -39,9 +51,36 @@ const StatusWindow = ({ status, onBack }) => {
         }
 
         return () => {
-            if (interval) clearInterval(interval);
+            if (intervalRef.current) clearInterval(intervalRef.current);
         };
-    }, [status, onBack, currentUser._id]);
+    }, [status, onBack, currentUser._id, showViewersList, isMouseDown, isTyping]);
+
+    useEffect(() => {
+        if (!status) return;
+
+        const fetchCurrentStatus = async () => {
+            const token = localStorage.getItem("token");
+            try {
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/status`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    const latest = data.data?.find((item) => item._id === status._id);
+                    if (latest) {
+                        setStatusData(latest);
+                        if (typeof onStatusUpdate === "function") {
+                            onStatusUpdate(latest);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to fetch status data", error);
+            }
+        };
+
+        fetchCurrentStatus();
+    }, [status, onStatusUpdate]);
 
     if (!status) {
         return (
@@ -51,18 +90,14 @@ const StatusWindow = ({ status, onBack }) => {
         );
     }
 
-    const isMine = status.user._id === currentUser._id;
+    const isMine = status?.user?._id === currentUser._id;
 
     const handleDelete = async () => {
-        const token = localStorage.getItem("token");
         try {
-            await fetch(`${import.meta.env.VITE_API_URL}/api/status/${status._id}`, {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await deleteStatus({ statusId: status._id });
             onBack();
         } catch (error) {
-            console.error("Failed to delete", error);
+            console.error("Failed to delete status", error);
         }
     };
 
@@ -77,8 +112,29 @@ const StatusWindow = ({ status, onBack }) => {
         onBack(); // For now, any navigation just closes the current status since we don't have the full list
     };
 
+    const handleMouseDown = () => {
+        setIsMouseDown(true);
+    };
+
+    const handleMouseUp = () => {
+        setIsMouseDown(false);
+    };
+
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (emojiRef.current && !emojiRef.current.contains(event.target)) {
+                setShowEmoji(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
     return (
-        <Box sx={{ display: "flex", flexDirection: "column", height: "100%", bgcolor: "black", color: "white", position: "relative" }}>
+        <Box sx={{ display: "flex", flexDirection: "column", height: "100vh", bgcolor: "black", color: "white", position: "relative", zIndex: 1000 }}>
             {/* Top Progress Bar */}
             <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, p: 1, zIndex: 10 }}>
                 <LinearProgress variant="determinate" value={progress} sx={{
@@ -107,7 +163,12 @@ const StatusWindow = ({ status, onBack }) => {
             </Box>
 
             {/* Content Area */}
-            <Box sx={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+            <Box
+                sx={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}
+                onMouseDown={handleMouseDown}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+            >
                 {status.contentType === "image" || (!status.contentType && status.content.includes("cloudinary")) ? (
                     <img src={status.content} alt="Status" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
                 ) : status.contentType === "video" ? (
@@ -123,11 +184,75 @@ const StatusWindow = ({ status, onBack }) => {
                 ) : (
                     <Typography variant="h4" sx={{ textAlign: "center", px: 4 }}>{status.content}</Typography>
                 )}
-
                 {/* Left/Right Click Zones */}
                 <Box onClick={(e) => handleClickArea(e, "prev")} sx={{ position: "absolute", left: 0, top: "10%", bottom: "10%", width: "30%", cursor: "pointer" }} />
                 <Box onClick={(e) => handleClickArea(e, "next")} sx={{ position: "absolute", right: 0, top: "10%", bottom: "10%", width: "30%", cursor: "pointer" }} />
+
             </Box>
+
+            {isMine ? (<Box sx={{
+                position: "absolute",
+                bottom: 30,
+                left: "50%",
+                transform: "translateX(-50%)",
+                color: "white",
+                textShadow: "1px 1px 2px rgba(0,0,0,0.8)",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                flexDirection: "row"
+            }} >
+                <Typography>{statusData.viewers.length}</Typography>
+                <RemoveRedEyeIcon
+                    onClick={() => {
+                        setShowViewersList(prev => !prev);
+                    }}
+                />
+            </Box>) : (<StatusReaction status={statusData} onTypingChange={setIsTyping} onBack={onBack} onStatusUpdate={(updated) => {
+                setStatusData(updated);
+                if (typeof onStatusUpdate === "function") {
+                    onStatusUpdate(updated);
+                }
+            }} />
+
+            )}
+            {/* Viewers List Modal */}
+            {showViewersList && (
+                <Box sx={{
+                    position: "absolute",
+                    bottom: 80,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    bgcolor: "rgba(0,0,0,0.8)",
+                    color: "white",
+                    borderRadius: 2,
+                    p: 2,
+                    zIndex: 10,
+                    maxHeight: "200px",
+                    overflowY: "auto",
+                    width: "80%",
+                }}>
+                    <Typography variant="h6" sx={{ mb: 1 }}>Viewed By</Typography>
+                    {statusData.viewers.length === 0 ? (
+                        <Typography variant="body2">No views yet</Typography>
+                    ) : (
+                        statusData.viewers.map(viewer => (
+                            <Box key={viewer._id} sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                                <Avatar
+                                    src={viewer.profilePicture}
+                                    sx={{
+                                        mr: 2,
+                                        bgcolor: viewer.profilePicture ? "transparent" : getConsistentColor(viewer._id)
+                                    }}
+                                />
+                                <Typography variant="subtitle1">{viewer.username || viewer.name}</Typography>
+                            </Box>
+                        ))
+                    )}
+                </Box>
+            )}
+
         </Box>
     );
 };

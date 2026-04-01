@@ -83,13 +83,10 @@ const ChatWindowTyping = () => {
 
     const handleEmojiClick = (e) => {
         setNewMessage(newMessage + e.emoji);
-
     }
-
     const handleAudio = () => {
         alert("Audio recording feature coming soon!");
     }
-
     const emojiRef = useRef(null);
 
     useEffect(() => {
@@ -98,7 +95,7 @@ const ChatWindowTyping = () => {
                 emojiRef.current &&
                 !emojiRef.current.contains(event.target)
             ) {
-                setShowEmoji(false); // ✅ CLOSE emoji picker
+                setShowEmoji(false);
             }
         }
 

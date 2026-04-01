@@ -167,7 +167,7 @@ const ChatWindowChat = () => {
                 sx={{
                     flex: 1,
                     overflowY: "auto",
-                    px: 2,
+                    px: 1,
                     py: 1,
                     pb: 12,
                     backgroundImage: `url(${bg})`,
@@ -247,8 +247,10 @@ const ChatWindowChat = () => {
                                     alignItems: isMyMessage
                                         ? "flex-end"
                                         : "flex-start",
+
+
                                     mb: 1,
-                                    mr: 2
+                                    mr: 0
                                 }}
                             >
                                 {shouldShowDate && (
@@ -278,7 +280,7 @@ const ChatWindowChat = () => {
                                 <Box
                                     sx={{
                                         position: "relative",
-                                        maxWidth: "65%",
+                                        maxWidth: "50%",
                                         pr: 3,
                                         pl: 2,
                                         pt:
@@ -347,12 +349,12 @@ const ChatWindowChat = () => {
                                         </Typography>
                                     )}
 
-                                    <Box sx={{ fontSize: "14px", pr: 1 }}>
+                                    <Box sx={{ fontSize: "14px" }}>
                                         {msg.contentType === "text" && (
                                             <Typography
                                                 sx={{
                                                     fontSize: "14px",
-                                                    pr: 4,
+                                                    // pr: 1,
                                                     fontStyle: msg.isMessageDeleted ? "italic" : "normal",
                                                     color: msg.isMessageDeleted ? "gray" : "inherit",
                                                     opacity: msg.isMessageDeleted ? 0.7 : 1,
@@ -397,6 +399,35 @@ const ChatWindowChat = () => {
                                             </Box>
                                         )}
 
+                                        {msg.contentType === "statusReaction" && (
+                                            <Box>
+                                                <Typography
+                                                    sx={{
+                                                        fontSize: "12px",
+                                                        fontWeight: 700,
+                                                        color: "#555",
+                                                        mb: 0.3,
+                                                    }}
+                                                >
+                                                    Reacted to your status
+                                                </Typography>
+                                                <Typography
+                                                    sx={{
+                                                        pr: 1,
+                                                        gap: 0.5,
+                                                        fontSize: "14px",
+                                                        fontStyle: "italic",
+                                                        color: "#4a4a4a",
+                                                        opacity: 0.9,
+                                                        fontWeight: 500,
+
+                                                    }}
+                                                >
+                                                    {msg.content}
+                                                </Typography>
+                                            </Box>
+                                        )}
+
                                         {msg.contentType === "video" && (
                                             <video
                                                 src={msg.imageOrVideoUrl}
@@ -413,7 +444,7 @@ const ChatWindowChat = () => {
                                         sx={{
                                             position: "absolute",
                                             bottom: 4,
-                                            right: 8,
+                                            right: 2,
                                             display: "flex",
                                             alignItems: "center",
                                             gap: 0.5,
@@ -473,7 +504,7 @@ const ChatWindowChat = () => {
                             <Box
                                 sx={{
                                     maxWidth: "60%",
-                                    px: 2,
+                                    // px: 2,
                                     py: 1,
                                     borderRadius: "18px",
                                     borderTopLeftRadius: 4,

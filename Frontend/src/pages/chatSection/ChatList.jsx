@@ -74,6 +74,7 @@ const ChatList = () => {
         socket.emit("join chat", chat._id);
         dispatch(selectChat(chat));
         setSearchText("");
+        setIsSearching(false);
     };
 
     // ✅ Search logic (merge users + chats)
@@ -133,7 +134,7 @@ const ChatList = () => {
     const getLastMessageText = (chat, otherUser) => {
         try {
             const msg = chat?.lastMessage;
-            
+
             // If no message, show user's about
             if (!msg) {
                 return otherUser?.about || "No messages yet";

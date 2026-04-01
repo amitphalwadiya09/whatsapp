@@ -8,11 +8,15 @@ const StatusPage = () => {
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
     const [selectedStatus, setSelectedStatus] = useState(null);
 
+    const handleStatusUpdate = (updatedStatus) => {
+        setSelectedStatus(updatedStatus);
+    };
+
     if (isMobile) {
         return (
             <Box sx={{ width: "100%", height: "100%" }}>
                 {!selectedStatus && <StatusList onSelect={setSelectedStatus} />}
-                {selectedStatus && <StatusWindow status={selectedStatus} onBack={() => setSelectedStatus(null)} />}
+                {selectedStatus && <StatusWindow status={selectedStatus} onBack={() => setSelectedStatus(null)} onStatusUpdate={handleStatusUpdate} />}
             </Box>
         );
     }

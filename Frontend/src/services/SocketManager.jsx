@@ -123,7 +123,7 @@ const SocketManager = () => {
         };
 
         const handleUserStatus = ({ userId, isOnline }) => {
-            console.log("📡 User status update:", { userId, isOnline });
+            // console.log("📡 User status update:", { userId, isOnline });
             dispatch(setOnlineUsers({ userId, isOnline }));
         };
 

@@ -6,7 +6,7 @@ const messageSchema = new mongoose.Schema({
     conversation: { type: mongoose.Schema.Types.ObjectId, ref: "Conversation", required: true },
     content: { type: String },
     imageOrVideoUrl: { type: String },
-    contentType: { type: String, enum: ['image', 'video', 'text', "audio", "file", "system"] },
+    contentType: { type: String, enum: ['image', 'video', 'text', "audio", "file", "system", "statusReaction"] },
     reactions: [{
         user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
         emoji: String

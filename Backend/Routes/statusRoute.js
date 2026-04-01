@@ -1,6 +1,6 @@
 import express from "express";
 import authMiddleware from "../middleware/authMiddleware.js";
-import { createStatus, deleteStatus, getStatus, viewStatus } from "../Controller/statusController.js";
+import { createStatus, deleteStatus, getStatus, viewStatus, addStatusReaction } from "../Controller/statusController.js";
 import { uploadFileMiddleware } from "../Config/cloudinaryconfig.js";
 import protect from "../middleware/Protect.js";
 
@@ -12,6 +12,7 @@ statusRouter.get('/', protect, getStatus)
 
 
 statusRouter.put('/:statusId/view', protect, viewStatus);
+statusRouter.post('/:statusId/reaction', protect, addStatusReaction);
 statusRouter.delete('/:statusId', protect, deleteStatus)
 
 

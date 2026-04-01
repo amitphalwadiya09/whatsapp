@@ -1,5 +1,6 @@
 import { uploadFileToCloudinary } from "../Config/cloudinaryconfig.js";
 import Status from "../Models/Status.model.js";
+import User from "../Models/User.Model.js";
 import response from "../Utils/responseHandler.js";
 
 export const createStatus = async (req, res) => {
@@ -71,9 +72,10 @@ export const getStatus = async (req, res) => {
     try {
         const statuses = await Status.find({
             expiresAt: { $gt: new Date() }
-        }).
-            populate("user", "username profilePicture")
-            .populate("viewers", "username prrofilePicture")
+        })
+            .populate("user", "username profilePicture")
+            .populate("viewers", "username profilePicture")
+            .populate("statusReactions.user", "username profilePicture")
             .sort({ createdAt: -1 });
 
         return response(res, 200, "status retrived successfully", statuses);
@@ -141,9 +143,9 @@ export const deleteStatus = async (req, res) => {
         if (!status) {
             return response(res, 404, "Status not found");
         }
-        if (status.user.toString() !== userId) {
-            return response(res, 403, "Not authorized to delete this status")
-        }
+        // if (status.user.toString() !== userId) {
+        //     return response(res, 403, "Not authorized to delete this status")
+        // }
         await status.deleteOne();
 
         if (req.io && req.socketUserMap) {
@@ -160,4 +162,72 @@ export const deleteStatus = async (req, res) => {
         return response(res, 500, 'status delete failed')
     }
 
+}
+
+export const addStatusReaction = async (req, res) => {
+    const { statusId } = req.params;
+    const { emoji, message, like } = req.body;
+    const userId = req.user._id;
+
+    try {
+        const status = await Status.findById(statusId);
+        if (!status) {
+            return response(res, 404, "Status not found");
+        }
+
+        const user = await User.findById(userId).select("_id username profilePicture");
+
+        const existingReaction = status.statusReactions.find(
+            r => r.user.toString() === userId.toString()
+        );
+
+        if (existingReaction) {
+            if (emoji !== undefined) existingReaction.emoji = emoji;
+            if (like !== undefined) existingReaction.like = like;
+            if (message !== undefined && message !== "") existingReaction.message = message;
+        } else {
+            status.statusReactions.push({
+                user: userId,
+                emoji: emoji || "",
+                message: message || "",
+                like: like || false
+            });
+        }
+
+        // If user explicitly removed reaction flags (no emoji/no message/no like), clear them
+        if (!emoji && !message && !like) {
+            status.statusReactions = status.statusReactions.filter(
+                r => r.user.toString() !== userId.toString()
+            );
+        }
+
+        await status.save();
+
+        const updatedStatus = await Status.findById(statusId)
+            .populate("user", "username profilePicture")
+            .populate("viewers", "username profilePicture")
+            .populate("statusReactions.user", "username profilePicture");
+
+        // Emit reaction event to status owner
+        if (req.io && req.socketUserMap) {
+            const statusOwnerSocketId = req.socketUserMap.get(
+                status.user._id.toString()
+            );
+            if (statusOwnerSocketId) {
+                req.io.to(statusOwnerSocketId).emit("status_reaction", {
+                    statusId,
+                    user,
+                    emoji,
+                    message,
+                    like,
+                    reactions: updatedStatus.statusReactions
+                });
+            }
+        }
+
+        return response(res, 200, "Reaction added successfully", updatedStatus);
+    } catch (error) {
+        console.error(error);
+        return response(res, 500, "Failed to add reaction");
+    }
 }
