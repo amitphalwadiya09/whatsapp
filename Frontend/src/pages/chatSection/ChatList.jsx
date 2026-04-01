@@ -142,7 +142,7 @@ const ChatList = () => {
 
             // Handle system messages
             if (msg.contentType === "system") {
-                return msg.content || "System message";
+                return msg.content.substring(0, 30) + "..." || "System message";
             }
 
             // Handle different content types
@@ -158,7 +158,7 @@ const ChatList = () => {
 
             // Return text message content
             if (msg.content) {
-                return msg.content.length > 50 ? msg.content.substring(0, 50) + "..." : msg.content;
+                return msg.content.length > 30 ? msg.content.substring(0, 30) + "..." : msg.content;
             }
 
             return otherUser?.about || "No messages yet";
@@ -396,9 +396,17 @@ const ChatList = () => {
                                                 fontWeight: unread ? 500 : 400,
                                             }}
                                         >
-                                            {chat && chat.contentType != "system"
-                                                ? chat.lastMessage?.content || "No messages yet"
-                                                : user?.about || "Hey there! I'm using WhatsApp"}
+                                            {
+                                                chat && chat.lastMessage?.contentType !== "system"
+                                                    ? (() => {
+                                                        const text = chat.lastMessage?.content || "";
+
+                                                        return text.length > 30
+                                                            ? text.slice(0, 30) + "..."
+                                                            : text || "No messages yet";
+                                                    })()
+                                                    : user?.about || "Hey there! I'm using WhatsApp"
+                                            }
                                         </Typography>
                                     </Box>
                                 </Box>
