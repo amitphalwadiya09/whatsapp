@@ -16,9 +16,8 @@ const StatusWindow = ({ status, onBack, onStatusUpdate }) => {
     const [statusData, setStatusData] = useState(status);
     const [isMouseDown, setIsMouseDown] = useState(false);
     const [isTyping, setIsTyping] = useState(false);
-    const emojiRef = useRef(null);
     const intervalRef = useRef(null);
-    // console.log("Rendering StatusWindow with status:", status);
+
 
     // Initialize status and mark as viewed
     useEffect(() => {
